@@ -1,0 +1,886 @@
+<%- include('partials/header') %>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* High Quality Starfield */
+  #starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  /* Enhanced Moon */
+  .moon {
+    position: fixed;
+    top: 8%;
+    right: 8%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fffef0, #f4e4c1 60%, #dcc89a);
+    box-shadow: 
+      0 0 60px 20px rgba(255, 250, 200, 0.4),
+      0 0 100px 40px rgba(255, 250, 200, 0.2),
+      inset -10px -10px 20px rgba(0,0,0,0.1);
+    animation: moonGlow 6s ease-in-out infinite;
+    z-index: 2;
+  }
+  
+  @keyframes moonGlow {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 0 0 60px 20px rgba(255, 250, 200, 0.4), 0 0 100px 40px rgba(255, 250, 200, 0.2);
+    }
+    50% { 
+      transform: scale(1.1);
+      box-shadow: 0 0 80px 30px rgba(255, 250, 200, 0.6), 0 0 140px 60px rgba(255, 250, 200, 0.3);
+    }
+  }
+  
+  /* Fireworks Canvas */
+  #fireworks-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Tree Canvas */
+  #tree-canvas {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    pointer-events: none;
+    filter: drop-shadow(0 0 20px rgba(255, 105, 180, 0.3));
+  }
+  
+  /* Heart System Error Screen */
+  #error-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 1;
+  }
+  
+  .error-icon {
+    font-size: 100px;
+    animation: brokenHeart 0.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px #ff1744);
+    margin-bottom: 2rem;
+  }
+  
+  @keyframes brokenHeart {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px) rotate(-5deg); }
+    75% { transform: translateX(5px) rotate(5deg); }
+  }
+  
+  .error-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #ff1744, #ff4081, #ff6b9d);
+    /* Fixed: Added all vendor prefixes for background-clip */
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    -ms-background-clip: text;
+    -o-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin-bottom: 1rem;
+    animation: glitch 2s ease-in-out infinite;
+  }
+  
+  @keyframes glitch {
+    0%, 90%, 100% { opacity: 1; transform: translateX(0); }
+    92% { opacity: 0.8; transform: translateX(-2px); }
+    94% { opacity: 0.9; transform: translateX(2px); }
+    96% { opacity: 0.8; transform: translateX(-1px); }
+  }
+  
+  .error-message {
+    font-family: 'Caveat', cursive;
+    font-size: 1.8rem;
+    color: #ffa8c5;
+    margin-bottom: 3rem;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+  
+  .fix-button {
+    background: linear-gradient(135deg, #ff1744, #ff4081, #ff6b9d);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    padding: 1.2rem 3rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(255, 23, 68, 0.5);
+    transition: all 0.4s ease;
+    animation: pulseButton 2s ease-in-out infinite;
+    font-family: 'Baloo 2', cursive;
+  }
+  
+  @keyframes pulseButton {
+    0%, 100% { transform: scale(1); box-shadow: 0 10px 40px rgba(255, 23, 68, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 15px 60px rgba(255, 23, 68, 0.7); }
+  }
+  
+  .fix-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 15px 60px rgba(255, 23, 68, 0.8);
+  }
+  
+  /* Loading Progress */
+  #loading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99;
+  }
+  
+  .progress-heart {
+    font-size: 80px;
+    animation: heartPulse 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px #ff4081);
+    margin-bottom: 2rem;
+  }
+  
+  @keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+  
+  .progress-text {
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    color: #ffa8c5;
+    margin-bottom: 2rem;
+  }
+  
+  .progress-bar-container {
+    width: 400px;
+    max-width: 90%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(255, 64, 129, 0.3);
+  }
+  
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff1744, #ff4081, #ff6b9d);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+  }
+  
+  /* Form Container */
+  #form-container {
+    position: relative;
+    z-index: 10;
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(30, 20, 50, 0.4);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border-radius: 35px;
+    padding: 3rem 2.5rem;
+    box-shadow: 
+      0 8px 32px 0 rgba(255, 64, 129, 0.3),
+      0 20px 80px 0 rgba(138, 43, 226, 0.2),
+      inset 0 0 60px rgba(255, 105, 180, 0.05);
+    border: 2px solid rgba(255, 105, 180, 0.2);
+    opacity: 0;
+    transform: scale(0.8) translateY(50px);
+  }
+  
+  .project-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 4rem;
+    text-align: center;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #f64f59 100%);
+    /* Fixed: Added all vendor prefixes for background-clip */
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    -ms-background-clip: text;
+    -o-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6));
+    margin-bottom: 0.5rem;
+    animation: titleShine 4s ease-in-out infinite;
+  }
+  
+  @keyframes titleShine {
+    0%, 100% { filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6)); }
+    50% { filter: drop-shadow(0 0 60px rgba(199, 113, 237, 0.8)); }
+  }
+  
+  .project-subtitle {
+    font-family: 'Caveat', cursive;
+    font-size: 1.6rem;
+    text-align: center;
+    color: #ffd5e1;
+    margin-bottom: 2.5rem;
+    text-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
+  }
+  
+  .form-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 105, 180, 0.3);
+    border-radius: 50px;
+    padding: 1.1rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .form-input::placeholder {
+    color: rgba(255, 182, 193, 0.5);
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #ff4081;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 0 30px rgba(255, 64, 129, 0.5),
+      inset 0 2px 10px rgba(255, 64, 129, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .form-button {
+    width: 100%;
+    background: linear-gradient(135deg, #ff1744 0%, #ff4081 50%, #ff6b9d 100%);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    padding: 1.2rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(255, 23, 68, 0.5);
+    transition: all 0.4s ease;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    animation: buttonGradient 3s ease infinite;
+  }
+  
+  @keyframes buttonGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  .form-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 60px rgba(255, 23, 68, 0.7);
+  }
+  
+  .form-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.2rem;
+    color: #ffd5e1;
+  }
+  
+  .form-footer a {
+    color: #ff6b9d;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s;
+    text-shadow: 0 0 10px rgba(255, 107, 157, 0.5);
+  }
+  
+  .form-footer a:hover {
+    color: #ff4081;
+    text-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+  }
+  
+  #error-message {
+    color: #ff6b6b;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 1rem;
+  }
+  
+  .form-element {
+    opacity: 0;
+  }
+  
+  /* Floating particles */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .project-title {
+      font-size: 3rem;
+    }
+    
+    .error-title {
+      font-size: 2.5rem;
+    }
+    
+    .moon {
+      width: 80px;
+      height: 80px;
+      top: 5%;
+      right: 5%;
+    }
+    
+    #form-container {
+      padding: 2rem 1.5rem;
+      max-width: 90%;
+    }
+    
+    .progress-bar-container {
+      width: 300px;
+    }
+  }
+</style>
+
+<!-- Canvases -->
+<canvas id="starfield"></canvas>
+<canvas id="fireworks-canvas"></canvas>
+<canvas id="tree-canvas"></canvas>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Error Screen -->
+<div id="error-screen">
+  <div class="error-icon">💔</div>
+  <h1 class="error-title">Heart System Error!</h1>
+  <p class="error-message">
+    Oops! Lagta hai tumhara dil toot gaya hai...<br>
+    Koi baat nahi, hum fix kar denge! 💕
+  </p>
+  <button class="fix-button" id="fix-heart-btn">
+    Fix My Heart ❤️‍🩹
+  </button>
+</div>
+
+<!-- Loading Progress -->
+<div id="loading-progress">
+  <div class="progress-heart">💖</div>
+  <div class="progress-text">Repairing your heart...</div>
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<!-- Signup Form -->
+<div id="form-container">
+  <h1 class="project-title form-element">Khat-e-Ehsaas</h1>
+  <p class="project-subtitle form-element">Where Hearts Connect Forever 💕</p>
+  
+  <form id="signup-form">
+    <input type="text" id="username" name="username" class="form-input form-element" placeholder="Apna pyaara naam..." required autocomplete="off">
+    <input type="password" id="password" name="password" class="form-input form-element" placeholder="Apna secret raaz..." required autocomplete="off">
+    <button type="submit" class="form-button form-element">Create Connection 💖</button>
+  </form>
+  
+  <div id="error-message"></div>
+  
+  <p class="form-footer form-element">
+    Pehle se connected ho? <a href="/login">Login karo</a>
+  </p>
+</div>
+
+<script src="/js/signup.js"></script>
+<script src="/js/redirect.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ============ HIGH QUALITY STARFIELD ============
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+let starW, starH;
+
+function resizeCanvas() {
+  starW = window.innerWidth;
+  starH = window.innerHeight;
+  starCanvas.width = starW;
+  starCanvas.height = starH;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Star {
+  constructor() {
+    this.reset();
+  }
+  
+  reset() {
+    this.x = Math.random() * starW;
+    this.y = Math.random() * starH;
+    this.z = Math.random() * starW;
+    this.radius = 0.5 + Math.random() * 2;
+    this.vx = (Math.random() - 0.5) * 0.2;
+    this.vy = (Math.random() - 0.5) * 0.2;
+    this.opacity = 0.3 + Math.random() * 0.7;
+    this.twinkleSpeed = 0.02 + Math.random() * 0.04;
+  }
+  
+  update() {
+    this.opacity += (Math.random() - 0.5) * this.twinkleSpeed;
+    this.opacity = Math.max(0.2, Math.min(1, this.opacity));
+    
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    if(this.x < 0) this.x = starW;
+    if(this.x > starW) this.x = 0;
+    if(this.y < 0) this.y = starH;
+    if(this.y > starH) this.y = 0;
+  }
+  
+  draw() {
+    starCtx.beginPath();
+    starCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    starCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    starCtx.shadowBlur = 15;
+    starCtx.shadowColor = `rgba(255, 255, 255, ${this.opacity})`;
+    starCtx.fill();
+  }
+}
+
+const stars = Array.from({length: 250}, () => new Star());
+
+function animateStars() {
+  starCtx.clearRect(0, 0, starW, starH);
+  stars.forEach(star => {
+    star.update();
+    star.draw();
+  });
+  requestAnimationFrame(animateStars);
+}
+animateStars();
+
+// ============ FIREWORKS with Three.js ============
+const fireworksCanvas = document.getElementById('fireworks-canvas');
+const fireworksScene = new THREE.Scene();
+const fireworksCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+fireworksCamera.position.z = 50;
+
+const fireworksRenderer = new THREE.WebGLRenderer({ canvas: fireworksCanvas, alpha: true });
+fireworksRenderer.setSize(window.innerWidth, window.innerHeight);
+
+class Firework {
+  constructor() {
+    const colors = [0xff1744, 0xff4081, 0xff6b9d, 0xffa8c5, 0xc471ed, 0xf64f59];
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    const velocities = [];
+    
+    this.particleCount = 100;
+    this.particles = [];
+    
+    for(let i = 0; i < this.particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / this.particleCount;
+      const velocity = 2 + Math.random() * 3;
+      
+      positions.push(0, 0, 0);
+      velocities.push(
+        Math.cos(angle) * velocity,
+        Math.sin(angle) * velocity,
+        (Math.random() - 0.5) * 2
+      );
+    }
+    
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    
+    const material = new THREE.PointsMaterial({
+      size: 0.8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      transparent: true,
+      opacity: 1,
+      blending: THREE.AdditiveBlending
+    });
+    
+    this.points = new THREE.Points(geometry, material);
+    this.points.position.set(
+      (Math.random() - 0.5) * 60,
+      (Math.random() - 0.3) * 40,
+      (Math.random() - 0.5) * 20
+    );
+    
+    this.velocities = velocities;
+    this.life = 1;
+    this.gravity = -0.05;
+    
+    fireworksScene.add(this.points);
+  }
+  
+  update() {
+    const positions = this.points.geometry.attributes.position.array;
+    
+    for(let i = 0; i < this.particleCount; i++) {
+      const i3 = i * 3;
+      
+      positions[i3] += this.velocities[i3];
+      positions[i3 + 1] += this.velocities[i3 + 1] + this.gravity;
+      positions[i3 + 2] += this.velocities[i3 + 2];
+      
+      this.velocities[i3 + 1] += this.gravity;
+    }
+    
+    this.points.geometry.attributes.position.needsUpdate = true;
+    this.life -= 0.01;
+    this.points.material.opacity = this.life;
+    
+    return this.life > 0;
+  }
+  
+  destroy() {
+    fireworksScene.remove(this.points);
+    this.points.geometry.dispose();
+    this.points.material.dispose();
+  }
+}
+
+let fireworks = [];
+let fireworksActive = false;
+
+function launchFirework() {
+  if(fireworksActive) {
+    fireworks.push(new Firework());
+  }
+}
+
+function animateFireworks() {
+  fireworks = fireworks.filter(fw => {
+    if(!fw.update()) {
+      fw.destroy();
+      return false;
+    }
+    return true;
+  });
+  
+  fireworksRenderer.render(fireworksScene, fireworksCamera);
+  requestAnimationFrame(animateFireworks);
+}
+animateFireworks();
+
+// ============ TREE WITH HEART LEAVES ============
+const treeCanvas = document.getElementById('tree-canvas');
+const treeCtx = treeCanvas.getContext('2d');
+treeCanvas.width = 600;
+treeCanvas.height = 800;
+
+const tree = {
+  trunk: { x: 300, y: 750, height: 0, maxHeight: 220 },
+  branches: [],
+  leaves: []
+};
+
+function drawHeart(x, y, size, color, opacity, glow) {
+  treeCtx.save();
+  treeCtx.globalAlpha = opacity;
+  
+  if(glow) {
+    treeCtx.shadowBlur = 30;
+    treeCtx.shadowColor = color;
+  }
+  
+  treeCtx.fillStyle = color;
+  treeCtx.beginPath();
+  const topY = y - size * 0.3;
+  treeCtx.moveTo(x, topY + size);
+  treeCtx.bezierCurveTo(x, topY + size * 0.7, x - size * 0.5, topY + size * 0.3, x - size * 0.5, topY);
+  treeCtx.bezierCurveTo(x - size * 0.5, topY - size * 0.3, x - size * 0.2, topY - size * 0.5, x, topY - size * 0.2);
+  treeCtx.bezierCurveTo(x + size * 0.2, topY - size * 0.5, x + size * 0.5, topY - size * 0.3, x + size * 0.5, topY);
+  treeCtx.bezierCurveTo(x + size * 0.5, topY + size * 0.3, x, topY + size * 0.7, x, topY + size);
+  treeCtx.fill();
+  treeCtx.restore();
+}
+
+class Branch {
+  constructor(x, y, angle, length) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.length = length;
+    this.current = 0;
+  }
+  
+  draw() {
+    if(this.current <= 0) return;
+    
+    const endX = this.x + Math.cos(this.angle) * this.current;
+    const endY = this.y - Math.sin(this.angle) * this.current;
+    
+    const gradient = treeCtx.createLinearGradient(this.x, this.y, endX, endY);
+    gradient.addColorStop(0, '#8B5A3C');
+    gradient.addColorStop(1, '#A0653C');
+    
+    treeCtx.strokeStyle = gradient;
+    treeCtx.lineWidth = 12;
+    treeCtx.shadowBlur = 20;
+    treeCtx.shadowColor = 'rgba(139, 90, 60, 0.5)';
+    treeCtx.beginPath();
+    treeCtx.moveTo(this.x, this.y);
+    treeCtx.lineTo(endX, endY);
+    treeCtx.stroke();
+  }
+}
+
+class Leaf {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = 0;
+    this.maxSize = 16 + Math.random() * 12;
+    this.opacity = 0;
+    this.glowPhase = Math.random() * Math.PI * 2;
+  }
+  
+  draw(time) {
+    const glow = Math.sin(time * 3 + this.glowPhase) > 0.3;
+    drawHeart(this.x, this.y, this.size, this.color, this.opacity, glow);
+  }
+}
+
+function initTree() {
+  const baseX = tree.trunk.x;
+  const baseY = tree.trunk.y - tree.trunk.maxHeight;
+  
+  tree.branches = [
+    new Branch(baseX, baseY, Math.PI * 0.6, 100),
+    new Branch(baseX, baseY, Math.PI * 0.4, 100),
+    new Branch(baseX, baseY - 55, Math.PI * 0.65, 85),
+    new Branch(baseX, baseY - 55, Math.PI * 0.35, 85),
+    new Branch(baseX, baseY - 110, Math.PI * 0.55, 75),
+    new Branch(baseX, baseY - 110, Math.PI * 0.45, 75),
+    new Branch(baseX, baseY - 165, Math.PI * 0.5, 60)
+  ];
+  
+  const colors = ['#ff1744', '#ff4081', '#ff6b9d', '#ff85a8', '#ffa8c5', '#ffb6c1', '#c471ed'];
+  tree.branches.forEach(branch => {
+    const numLeaves = 3 + Math.floor(Math.random() * 4);
+    for(let i = 0; i < numLeaves; i++) {
+      const t = 0.25 + Math.random() * 0.65;
+      const x = branch.x + Math.cos(branch.angle) * branch.length * t;
+      const y = branch.y - Math.sin(branch.angle) * branch.length * t;
+      tree.leaves.push(new Leaf(x, y, colors[Math.floor(Math.random() * colors.length)]));
+    }
+  });
+}
+
+let glowTime = 0;
+function drawTree() {
+  treeCtx.clearRect(0, 0, treeCanvas.width, treeCanvas.height);
+  
+  // Trunk
+  if(tree.trunk.height > 0) {
+    const gradient = treeCtx.createLinearGradient(0, tree.trunk.y, 0, tree.trunk.y - tree.trunk.height);
+    gradient.addColorStop(0, '#6B4423');
+    gradient.addColorStop(0.5, '#8B5A3C');
+    gradient.addColorStop(1, '#A0653C');
+    
+    treeCtx.fillStyle = gradient;
+    treeCtx.shadowBlur = 25;
+    treeCtx.shadowColor = 'rgba(107, 68, 35, 0.6)';
+    treeCtx.fillRect(tree.trunk.x - 10, tree.trunk.y - tree.trunk.height, 20, tree.trunk.height);
+  }
+  
+  tree.branches.forEach(b => b.draw());
+  tree.leaves.forEach(l => l.draw(glowTime));
+  
+  glowTime += 0.08;
+}
+
+// ============ ANIMATION SEQUENCE ============
+const fixBtn = document.getElementById('fix-heart-btn');
+const errorScreen = document.getElementById('error-screen');
+const loadingProgress = document.getElementById('loading-progress');
+const progressBar = document.getElementById('progress-bar');
+
+fixBtn.addEventListener('click', () => {
+  gsap.to(errorScreen, {
+    opacity: 0,
+    duration: 0.8,
+    onComplete: () => {
+      errorScreen.style.display = 'none';
+      loadingProgress.style.display = 'flex';
+      
+      // Progress animation
+      gsap.to(progressBar, {
+        width: '100%',
+        duration: 3,
+        ease: 'power2.inOut',
+        onComplete: startTreeAnimation
+      });
+    }
+  });
+});
+
+function startTreeAnimation() {
+  gsap.to(loadingProgress, {
+    opacity: 0,
+    duration: 1,
+    onComplete: () => loadingProgress.style.display = 'none'
+  });
+  
+  const tl = gsap.timeline();
+  
+  // Grow trunk
+  tl.to(tree.trunk, {
+    height: tree.trunk.maxHeight,
+    duration: 2,
+    ease: 'power2.out',
+    onUpdate: drawTree,
+    onComplete: initTree
+  });
+  
+  // Grow branches
+  tl.to(tree.branches, {
+    current: (i, target) => target.length,
+    duration: 1.8,
+    stagger: 0.2,
+    ease: 'power2.out',
+    onUpdate: drawTree
+  });
+  
+  // Bloom leaves
+  tl.to(tree.leaves, {
+    size: (i, target) => target.maxSize,
+    opacity: 1,
+    duration: 1.2,
+    stagger: 0.12,
+    ease: 'elastic.out(1, 0.5)',
+    onUpdate: drawTree
+  });
+  
+  // Start fireworks
+  tl.add(() => {
+    fireworksActive = true;
+    setInterval(launchFirework, 400);
+  }, '-=1');
+  
+  // Show form
+  tl.to('#form-container', {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    duration: 1.8,
+    ease: 'elastic.out(1, 0.5)'
+  }, '-=1.5');
+  
+  tl.to('.form-element', {
+    opacity: 1,
+    y: 0,
+    stagger: 0.15,
+    duration: 0.8,
+    ease: 'power2.out'
+  }, '-=1.2');
+  
+  // Stop fireworks after some time
+  setTimeout(() => {
+    fireworksActive = false;
+    setTimeout(() => {
+      fireworks.forEach(fw => fw.destroy());
+      fireworks = [];
+    }, 3000);
+  }, 8000);
+}
+
+// Continuous tree glow animation
+function continuousTreeAnimation() {
+  if(tree.leaves.length > 0 && tree.leaves[0].opacity > 0) {
+    drawTree();
+  }
+  requestAnimationFrame(continuousTreeAnimation);
+}
+continuousTreeAnimation();
+
+// ============ INPUT EFFECTS ============
+document.querySelectorAll('.form-input').forEach(input => {
+  input.addEventListener('focus', function(e) {
+    for(let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.textContent = ['💕', '💖', '💗', '💓', '💝'][Math.floor(Math.random() * 5)];
+        particle.style.left = e.target.getBoundingClientRect().left + Math.random() * e.target.offsetWidth + 'px';
+        particle.style.top = e.target.getBoundingClientRect().top + 'px';
+        particle.style.fontSize = (18 + Math.random() * 16) + 'px';
+        document.body.appendChild(particle);
+        
+        gsap.to(particle, {
+          y: -120,
+          x: (Math.random() - 0.5) * 80,
+          rotation: (Math.random() - 0.5) * 360,
+          opacity: 0,
+          scale: 2,
+          duration: 2.5,
+          ease: 'power1.out',
+          onComplete: () => particle.remove()
+        });
+      }, i * 150);
+    }
+  });
+});
+
+// Resize handlers
+window.addEventListener('resize', () => {
+  fireworksCamera.aspect = window.innerWidth / window.innerHeight;
+  fireworksCamera.updateProjectionMatrix();
+  fireworksRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+<%- include('partials/footer') %>

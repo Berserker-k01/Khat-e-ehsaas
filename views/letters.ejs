@@ -1,0 +1,808 @@
+<%- include('partials/header') %>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* High Quality Starfield */
+  #starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  /* Enhanced Moon */
+  .moon {
+    position: fixed;
+    top: 5%;
+    right: 5%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fffef0, #f4e4c1 60%, #dcc89a);
+    box-shadow: 
+      0 0 60px 20px rgba(255, 250, 200, 0.4),
+      0 0 100px 40px rgba(255, 250, 200, 0.2),
+      inset -10px -10px 20px rgba(0,0,0,0.1);
+    animation: moonGlow 6s ease-in-out infinite;
+    z-index: 2;
+  }
+  
+  @keyframes moonGlow {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 0 0 60px 20px rgba(255, 250, 200, 0.4), 0 0 100px 40px rgba(255, 250, 200, 0.2);
+    }
+    50% { 
+      transform: scale(1.1);
+      box-shadow: 0 0 80px 30px rgba(255, 250, 200, 0.6), 0 0 140px 60px rgba(255, 250, 200, 0.3);
+    }
+  }
+  
+  /* Floating Hearts */
+  .floating-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatUp 12s linear infinite;
+    opacity: 0;
+  }
+  
+  @keyframes floatUp {
+    0% {
+      transform: translateY(100vh) rotate(0deg) scale(0.8);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.6;
+    }
+    90% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-150px) rotate(360deg) scale(1.3);
+      opacity: 0;
+    }
+  }
+  
+  /* Main Container */
+  .letters-container {
+    position: relative;
+    z-index: 10;
+    max-width: 100%;
+    padding: 2rem 1rem;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  /* Page Header */
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .page-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #f64f59 100%);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6));
+    margin-bottom: 1.5rem;
+    animation: titleShine 4s ease-in-out infinite;
+  }
+  
+  @keyframes titleShine {
+    0%, 100% { filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6)); }
+    50% { filter: drop-shadow(0 0 60px rgba(199, 113, 237, 0.8)); }
+  }
+  
+  .write-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff1744 0%, #ff4081 50%, #ff6b9d 100%);
+    background-size: 200% 200%;
+    color: white;
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    font-weight: 700;
+    padding: 1.1rem 2.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 10px 40px rgba(255, 23, 68, 0.5);
+    transition: all 0.4s ease;
+    animation: buttonGradient 3s ease infinite;
+  }
+  
+  @keyframes buttonGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  .write-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 60px rgba(255, 23, 68, 0.7);
+  }
+  
+  /* Horizontal Scroll Container */
+  .envelopes-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2rem 0;
+    margin: 2rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 105, 180, 0.5) rgba(255, 255, 255, 0.1);
+  }
+  
+  .envelopes-scroll-container::-webkit-scrollbar {
+    height: 10px;
+  }
+  
+  .envelopes-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  
+  .envelopes-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 105, 180, 0.5);
+    border-radius: 10px;
+  }
+  
+  .envelopes-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 105, 180, 0.7);
+  }
+  
+  /* Envelopes Grid - Horizontal */
+  .envelopes-grid {
+    display: flex;
+    gap: 2rem;
+    padding: 0 1rem;
+    min-width: min-content;
+  }
+  
+  /* Envelope Design */
+  .envelope-card {
+    position: relative;
+    width: 320px;
+    height: 280px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  
+  .envelope-card:hover {
+    transform: translateY(-15px) scale(1.05);
+  }
+  
+  /* Envelope Back */
+  .envelope-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.3), rgba(196, 113, 237, 0.3));
+    border: 3px solid rgba(255, 105, 180, 0.5);
+    border-radius: 15px;
+    box-shadow: 0 15px 50px rgba(255, 64, 129, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  /* Envelope Flap */
+  .envelope-flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(135deg, rgba(255, 64, 129, 0.4), rgba(196, 113, 237, 0.4));
+    border-left: 3px solid rgba(255, 105, 180, 0.6);
+    border-right: 3px solid rgba(255, 105, 180, 0.6);
+    border-top: 3px solid rgba(255, 105, 180, 0.6);
+    clip-path: polygon(0 0, 50% 60%, 100% 0);
+    transform-origin: top center;
+    transition: transform 0.5s ease;
+    z-index: 2;
+  }
+  
+  .envelope-card:hover .envelope-flap {
+    transform: rotateX(-180deg);
+  }
+  
+  /* Envelope Content */
+  .envelope-content {
+    position: absolute;
+    width: 90%;
+    height: 85%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 20, 50, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    z-index: 1;
+  }
+  
+  .envelope-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 25px rgba(255, 105, 180, 0.6));
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  
+  .envelope-title {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+    color: #ffa8c5;
+    margin-bottom: 0.8rem;
+    text-shadow: 0 0 25px rgba(255, 105, 180, 0.7);
+    line-height: 1.4;
+  }
+  
+  .letters-count {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    color: rgba(255, 182, 193, 0.9);
+    font-weight: 700;
+    background: rgba(255, 105, 180, 0.2);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+  }
+  
+  /* Letter Modal */
+  #letter-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+  }
+  
+  .modal-content {
+    position: relative;
+    background: rgba(30, 20, 50, 0.85);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-radius: 30px;
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 3px solid rgba(255, 105, 180, 0.5);
+    box-shadow: 0 30px 100px rgba(255, 64, 129, 0.7);
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid rgba(255, 105, 180, 0.4);
+  }
+  
+  .modal-category {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    color: #ffa8c5;
+    text-shadow: 0 0 25px rgba(255, 105, 180, 0.7);
+  }
+  
+  .close-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 105, 180, 0.5);
+    color: #ffa8c5;
+    font-size: 1.8rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .close-btn:hover {
+    background: rgba(255, 64, 129, 0.3);
+    border-color: #ff4081;
+    transform: rotate(90deg);
+  }
+  
+  .letter-content {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(255, 182, 193, 0.3);
+    box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .letter-from {
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: #c471ed;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 0 20px rgba(196, 113, 237, 0.6);
+  }
+  
+  .letter-message {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.15rem;
+    color: #ffd5e1;
+    line-height: 2;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  .letter-date {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: rgba(255, 182, 193, 0.7);
+    margin-top: 1.5rem;
+    text-align: right;
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .nav-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #ff1744, #ff4081);
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 30px rgba(255, 23, 68, 0.5);
+  }
+  
+  .nav-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(255, 23, 68, 0.7);
+  }
+  
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  .letter-counter {
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: #ffa8c5;
+    margin-bottom: 1.5rem;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgba(255, 182, 193, 0.7);
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+  }
+  
+  .page-element {
+    opacity: 0;
+  }
+  
+  /* Scrollbar Styling */
+  .modal-content::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  .modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  
+  .modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 105, 180, 0.6);
+    border-radius: 10px;
+  }
+  
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 105, 180, 0.8);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .moon {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .envelope-card {
+      width: 280px;
+      height: 250px;
+    }
+    
+    .modal-content {
+      padding: 1.8rem;
+    }
+    
+    .letter-content {
+      padding: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .letters-container {
+      padding: 1.5rem 0.5rem;
+    }
+    
+    .envelope-card {
+      width: 260px;
+      height: 230px;
+    }
+    
+    .envelope-icon {
+      font-size: 3rem;
+    }
+    
+    .modal-content {
+      padding: 1.5rem;
+    }
+    
+    .nav-buttons {
+      flex-direction: column;
+    }
+    
+    .moon {
+      width: 60px;
+      height: 60px;
+    }
+  }
+</style>
+
+<!-- Canvases -->
+<canvas id="starfield"></canvas>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Main Container -->
+<div class="letters-container">
+  <div class="page-header page-element">
+    <h1 class="page-title">Our Letters 💕</h1>
+    <a href="/write-letter" class="write-btn">Write a New Letter 💌</a>
+  </div>
+  
+  <!-- Horizontal Scroll Container -->
+  <div class="envelopes-scroll-container page-element">
+    <div class="envelopes-grid">
+      <!-- Envelope 1 -->
+      <div class="envelope-card" onclick="openEnvelope('miss-me')">
+        <div class="envelope-back"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-content">
+          <div class="envelope-icon">💌</div>
+          <h3 class="envelope-title">Open when you miss me...</h3>
+          <p class="letters-count" id="miss-me-count">0 letters</p>
+        </div>
+      </div>
+      
+      <!-- Envelope 2 -->
+      <div class="envelope-card" onclick="openEnvelope('need-motivation')">
+        <div class="envelope-back"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-content">
+          <div class="envelope-icon">✨</div>
+          <h3 class="envelope-title">Open when you need motivation...</h3>
+          <p class="letters-count" id="need-motivation-count">0 letters</p>
+        </div>
+      </div>
+      
+      <!-- Envelope 3 -->
+      <div class="envelope-card" onclick="openEnvelope('angry-at-me')">
+        <div class="envelope-back"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-content">
+          <div class="envelope-icon">🌹</div>
+          <h3 class="envelope-title">Open when you're angry at me...</h3>
+          <p class="letters-count" id="angry-at-me-count">0 letters</p>
+        </div>
+      </div>
+      
+      <!-- Envelope 4 -->
+      <div class="envelope-card" onclick="openEnvelope('feel-lonely')">
+        <div class="envelope-back"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-content">
+          <div class="envelope-icon">🤗</div>
+          <h3 class="envelope-title">Open when you feel lonely...</h3>
+          <p class="letters-count" id="feel-lonely-count">0 letters</p>
+        </div>
+      </div>
+      
+      <!-- Envelope 5 -->
+      <div class="envelope-card" onclick="openEnvelope('just-because')">
+        <div class="envelope-back"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-content">
+          <div class="envelope-icon">💖</div>
+          <h3 class="envelope-title">Open just because...</h3>
+          <p class="letters-count" id="just-because-count">0 letters</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Letter Modal -->
+<div id="letter-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-category" id="modal-category">Category</h2>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    
+    <div class="letter-counter" id="letter-counter">Letter 1 of 1</div>
+    
+    <div class="letter-content" id="letter-display">
+      <div class="empty-state">No letters yet in this category 💌</div>
+    </div>
+    
+    <div class="nav-buttons">
+      <button class="nav-btn" id="prev-btn" onclick="navigateLetter(-1)">← Previous</button>
+      <button class="nav-btn" id="next-btn" onclick="navigateLetter(1)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/letters.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+// ============ HIGH QUALITY STARFIELD (NOT DISTORTED) ============
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+let starW, starH;
+
+function resizeCanvas() {
+  starW = window.innerWidth;
+  starH = window.innerHeight;
+  starCanvas.width = starW;
+  starCanvas.height = starH;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Star {
+  constructor() {
+    this.reset();
+  }
+  
+  reset() {
+    this.x = Math.random() * starW;
+    this.y = Math.random() * starH;
+    this.radius = 0.8 + Math.random() * 2.2;
+    this.vx = (Math.random() - 0.5) * 0.15;
+    this.vy = (Math.random() - 0.5) * 0.15;
+    this.opacity = 0.4 + Math.random() * 0.6;
+    this.twinkleSpeed = 0.015 + Math.random() * 0.03;
+  }
+  
+  update() {
+    this.opacity += (Math.random() - 0.5) * this.twinkleSpeed;
+    this.opacity = Math.max(0.3, Math.min(1, this.opacity));
+    
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    if(this.x < 0) this.x = starW;
+    if(this.x > starW) this.x = 0;
+    if(this.y < 0) this.y = starH;
+    if(this.y > starH) this.y = 0;
+  }
+  
+  draw() {
+    starCtx.save();
+    starCtx.beginPath();
+    starCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    starCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    starCtx.shadowBlur = 20;
+    starCtx.shadowColor = `rgba(255, 255, 255, ${this.opacity * 0.8})`;
+    starCtx.fill();
+    starCtx.restore();
+  }
+}
+
+const stars = Array.from({length: 300}, () => new Star());
+
+function animateStars() {
+  starCtx.clearRect(0, 0, starW, starH);
+  stars.forEach(star => {
+    star.update();
+    star.draw();
+  });
+  requestAnimationFrame(animateStars);
+}
+animateStars();
+
+// ============ FLOATING HEARTS (HIGH QUALITY) ============
+function createFloatingHeart() {
+  const heart = document.createElement('div');
+  heart.className = 'floating-heart';
+  heart.textContent = ['❤️', '💕', '💖', '💗', '💓'][Math.floor(Math.random() * 5)];
+  heart.style.left = Math.random() * 100 + '%';
+  heart.style.fontSize = (18 + Math.random() * 22) + 'px';
+  heart.style.animationDuration = (9 + Math.random() * 6) + 's';
+  heart.style.animationDelay = Math.random() * 3 + 's';
+  document.body.appendChild(heart);
+  
+  setTimeout(() => heart.remove(), 16000);
+}
+
+setInterval(createFloatingHeart, 700);
+
+// ============ INITIAL ANIMATION ============
+gsap.to('.letters-container', {
+  opacity: 1,
+  y: 0,
+  duration: 1.5,
+  delay: 0.5,
+  ease: 'elastic.out(1, 0.6)'
+});
+
+gsap.to('.page-element', {
+  opacity: 1,
+  y: 0,
+  stagger: 0.2,
+  duration: 0.8,
+  delay: 1,
+  ease: 'power2.out'
+});
+
+// ============ MODAL FUNCTIONS ============
+let currentCategory = '';
+let currentLetterIndex = 0;
+let currentLetters = [];
+
+const categoryTitles = {
+  'miss-me': 'Open when you miss me... 💕',
+  'need-motivation': 'Open when you need motivation... ✨',
+  'angry-at-me': "Open when you're angry at me... 🌹",
+  'feel-lonely': 'Open when you feel lonely... 🤗',
+  'just-because': 'Open just because... 💖'
+};
+
+function openEnvelope(category) {
+  currentCategory = category;
+  currentLetterIndex = 0;
+  
+  if (window.lettersData && window.lettersData[category]) {
+    currentLetters = window.lettersData[category];
+  } else {
+    currentLetters = [];
+  }
+  
+  const modal = document.getElementById('letter-modal');
+  const modalContent = modal.querySelector('.modal-content');
+  
+  modal.style.display = 'flex';
+  
+  gsap.fromTo(modalContent, 
+    { scale: 0.85, opacity: 0, rotateY: -10 },
+    { scale: 1, opacity: 1, rotateY: 0, duration: 0.7, ease: 'back.out(1.7)' }
+  );
+  
+  document.getElementById('modal-category').textContent = categoryTitles[category];
+  displayCurrentLetter();
+}
+
+function closeModal() {
+  const modal = document.getElementById('letter-modal');
+  const modalContent = modal.querySelector('.modal-content');
+  
+  gsap.to(modalContent, {
+    scale: 0.85,
+    opacity: 0,
+    rotateY: 10,
+    duration: 0.5,
+    ease: 'power2.in',
+    onComplete: () => {
+      modal.style.display = 'none';
+    }
+  });
+}
+
+function displayCurrentLetter() {
+  const letterDisplay = document.getElementById('letter-display');
+  const letterCounter = document.getElementById('letter-counter');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  
+  if (currentLetters.length === 0) {
+    letterDisplay.innerHTML = '<div class="empty-state">No letters yet in this category 💌</div>';
+    letterCounter.textContent = 'No letters yet';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+  
+  const letter = currentLetters[currentLetterIndex];
+  
+  letterDisplay.innerHTML = `
+    <div class="letter-from">From: ${letter.from}</div>
+    <div class="letter-message">${letter.message}</div>
+    <div class="letter-date">${new Date(letter.createdAt).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })}</div>
+  `;
+  
+  letterCounter.textContent = `Letter ${currentLetterIndex + 1} of ${currentLetters.length}`;
+  
+  prevBtn.disabled = currentLetterIndex === 0;
+  nextBtn.disabled = currentLetterIndex === currentLetters.length - 1;
+  
+  gsap.fromTo(letterDisplay,
+    { opacity: 0, y: 15 },
+    { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+  );
+}
+
+function navigateLetter(direction) {
+  currentLetterIndex += direction;
+  
+  if (currentLetterIndex < 0) currentLetterIndex = 0;
+  if (currentLetterIndex >= currentLetters.length) currentLetterIndex = currentLetters.length - 1;
+  
+  displayCurrentLetter();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('letter-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'letter-modal') closeModal();
+});
+</script>
+
+<%- include('partials/footer') %>

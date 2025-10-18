@@ -1,0 +1,790 @@
+<%- include('partials/header') %>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* High Quality Starfield */
+  #starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  /* Enhanced Moon */
+  .moon {
+    position: fixed;
+    top: 8%;
+    right: 8%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fffef0, #f4e4c1 60%, #dcc89a);
+    box-shadow: 
+      0 0 60px 20px rgba(255, 250, 200, 0.4),
+      0 0 100px 40px rgba(255, 250, 200, 0.2),
+      inset -10px -10px 20px rgba(0,0,0,0.1);
+    animation: moonGlow 6s ease-in-out infinite;
+    z-index: 2;
+  }
+  
+  @keyframes moonGlow {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 0 0 60px 20px rgba(255, 250, 200, 0.4), 0 0 100px 40px rgba(255, 250, 200, 0.2);
+    }
+    50% { 
+      transform: scale(1.1);
+      box-shadow: 0 0 80px 30px rgba(255, 250, 200, 0.6), 0 0 140px 60px rgba(255, 250, 200, 0.3);
+    }
+  }
+  
+  /* Fireworks Canvas */
+  #fireworks-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    display: none;
+  }
+  
+  /* Floating Hearts Background */
+  .floating-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatUp 12s linear infinite;
+    opacity: 0;
+  }
+  
+  @keyframes floatUp {
+    0% {
+      transform: translateY(100vh) rotate(0deg) scale(0.8);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.6;
+    }
+    90% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-150px) rotate(360deg) scale(1.3);
+      opacity: 0;
+    }
+  }
+  
+  /* Hearts Connection Animation Screen */
+  #connection-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    flex-direction: column;
+  }
+  
+  #connection-canvas {
+    filter: drop-shadow(0 0 40px rgba(255, 64, 129, 0.8));
+  }
+  
+  .connection-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #ff6b9d, #c471ed, #f64f59);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    opacity: 0;
+    margin-top: 2rem;
+    filter: drop-shadow(0 0 30px rgba(255, 105, 180, 0.8));
+  }
+  
+  /* Form Container */
+  #form-container {
+    position: relative;
+    z-index: 10;
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(30, 20, 50, 0.4);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border-radius: 35px;
+    padding: 3rem 2.5rem;
+    box-shadow: 
+      0 8px 32px 0 rgba(255, 64, 129, 0.3),
+      0 20px 80px 0 rgba(138, 43, 226, 0.2),
+      inset 0 0 60px rgba(255, 105, 180, 0.05);
+    border: 2px solid rgba(255, 105, 180, 0.2);
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+  }
+  
+  .welcome-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 4rem;
+    text-align: center;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #f64f59 100%);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    -ms-background-clip: text;
+    -o-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6));
+    margin-bottom: 0.5rem;
+    animation: titleShine 4s ease-in-out infinite;
+  }
+  
+  @keyframes titleShine {
+    0%, 100% { filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.6)); }
+    50% { filter: drop-shadow(0 0 60px rgba(199, 113, 237, 0.8)); }
+  }
+  
+  .welcome-subtitle {
+    font-family: 'Caveat', cursive;
+    font-size: 1.6rem;
+    text-align: center;
+    color: #ffd5e1;
+    margin-bottom: 2.5rem;
+    text-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
+  }
+  
+  .form-label {
+    display: block;
+    font-family: 'Caveat', cursive;
+    font-size: 1.3rem;
+    color: #ffa8c5;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 105, 180, 0.3);
+    border-radius: 50px;
+    padding: 1.1rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .form-input::placeholder {
+    color: rgba(255, 182, 193, 0.5);
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #ff4081;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 0 30px rgba(255, 64, 129, 0.5),
+      inset 0 2px 10px rgba(255, 64, 129, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .form-button {
+    width: 100%;
+    background: linear-gradient(135deg, #ff1744 0%, #ff4081 50%, #ff6b9d 100%);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    padding: 1.2rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(255, 23, 68, 0.5);
+    transition: all 0.4s ease;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    animation: buttonGradient 3s ease infinite;
+  }
+  
+  @keyframes buttonGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  .form-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 60px rgba(255, 23, 68, 0.7);
+  }
+  
+  .form-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.2rem;
+    color: #ffd5e1;
+  }
+  
+  .form-footer a {
+    color: #ff6b9d;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s;
+    text-shadow: 0 0 10px rgba(255, 107, 157, 0.5);
+  }
+  
+  .form-footer a:hover {
+    color: #ff4081;
+    text-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+  }
+  
+  #error-message {
+    color: #ff6b6b;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 1rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+  }
+  
+  .form-element {
+    opacity: 0;
+  }
+  
+  /* Particle effect */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 250;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .welcome-title {
+      font-size: 3rem;
+    }
+    
+    .connection-text {
+      font-size: 2.5rem;
+    }
+    
+    #form-container {
+      padding: 2rem 1.5rem;
+      max-width: 90%;
+    }
+    
+    .moon {
+      width: 80px;
+      height: 80px;
+      top: 5%;
+      right: 5%;
+    }
+  }
+</style>
+
+<!-- Canvases -->
+<canvas id="starfield"></canvas>
+<canvas id="fireworks-canvas"></canvas>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Hearts Connection Animation Screen -->
+<div id="connection-screen">
+  <canvas id="connection-canvas" width="700" height="500"></canvas>
+  <div class="connection-text" id="connection-text">Hearts Connected! 💕</div>
+</div>
+
+<!-- Login Form -->
+<div id="form-container">
+  <h1 class="welcome-title form-element">Welcome Back!</h1>
+  <p class="welcome-subtitle form-element">Reconnect with your special someone 💕</p>
+  
+  <form id="login-form">
+    <div class="form-element">
+      <label for="username" class="form-label">Your Username</label>
+      <input type="text" id="username" name="username" class="form-input" placeholder="Enter your username..." required autocomplete="off">
+    </div>
+    
+    <div class="form-element">
+      <label for="password" class="form-label">Your Password</label>
+      <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password..." required autocomplete="off">
+    </div>
+    
+    <button type="submit" class="form-button form-element">
+      Login & Reconnect 💕
+    </button>
+  </form>
+  
+  <div id="error-message"></div>
+  
+  <p class="form-footer form-element">
+    Nahi hai account? <a href="/signup">Sign up karo</a>
+  </p>
+</div>
+
+<script src="/js/login.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ============ HIGH QUALITY STARFIELD ============
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+let starW, starH;
+
+function resizeCanvas() {
+  starW = window.innerWidth;
+  starH = window.innerHeight;
+  starCanvas.width = starW;
+  starCanvas.height = starH;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Star {
+  constructor() {
+    this.reset();
+  }
+  
+  reset() {
+    this.x = Math.random() * starW;
+    this.y = Math.random() * starH;
+    this.radius = 0.5 + Math.random() * 2;
+    this.vx = (Math.random() - 0.5) * 0.2;
+    this.vy = (Math.random() - 0.5) * 0.2;
+    this.opacity = 0.3 + Math.random() * 0.7;
+    this.twinkleSpeed = 0.02 + Math.random() * 0.04;
+  }
+  
+  update() {
+    this.opacity += (Math.random() - 0.5) * this.twinkleSpeed;
+    this.opacity = Math.max(0.2, Math.min(1, this.opacity));
+    
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    if(this.x < 0) this.x = starW;
+    if(this.x > starW) this.x = 0;
+    if(this.y < 0) this.y = starH;
+    if(this.y > starH) this.y = 0;
+  }
+  
+  draw() {
+    starCtx.beginPath();
+    starCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    starCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    starCtx.shadowBlur = 15;
+    starCtx.shadowColor = `rgba(255, 255, 255, ${this.opacity})`;
+    starCtx.fill();
+  }
+}
+
+const stars = Array.from({length: 250}, () => new Star());
+
+function animateStars() {
+  starCtx.clearRect(0, 0, starW, starH);
+  stars.forEach(star => {
+    star.update();
+    star.draw();
+  });
+  requestAnimationFrame(animateStars);
+}
+animateStars();
+
+// ============ FLOATING HEARTS ============
+function createFloatingHeart() {
+  const heart = document.createElement('div');
+  heart.className = 'floating-heart';
+  heart.textContent = ['❤️', '💕', '💖', '💗', '💓'][Math.floor(Math.random() * 5)];
+  heart.style.left = Math.random() * 100 + '%';
+  heart.style.fontSize = (16 + Math.random() * 20) + 'px';
+  heart.style.animationDuration = (10 + Math.random() * 5) + 's';
+  heart.style.animationDelay = Math.random() * 3 + 's';
+  document.body.appendChild(heart);
+  
+  setTimeout(() => heart.remove(), 15000);
+}
+
+setInterval(createFloatingHeart, 800);
+
+// ============ FIREWORKS ============
+const fireworksCanvas = document.getElementById('fireworks-canvas');
+const fireworksScene = new THREE.Scene();
+const fireworksCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+fireworksCamera.position.z = 50;
+
+const fireworksRenderer = new THREE.WebGLRenderer({ canvas: fireworksCanvas, alpha: true });
+fireworksRenderer.setSize(window.innerWidth, window.innerHeight);
+
+class Firework {
+  constructor() {
+    const colors = [0xff1744, 0xff4081, 0xff6b9d, 0xffa8c5, 0xc471ed, 0xf64f59];
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    const velocities = [];
+    
+    this.particleCount = 100;
+    
+    for(let i = 0; i < this.particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / this.particleCount;
+      const velocity = 2 + Math.random() * 3;
+      
+      positions.push(0, 0, 0);
+      velocities.push(
+        Math.cos(angle) * velocity,
+        Math.sin(angle) * velocity,
+        (Math.random() - 0.5) * 2
+      );
+    }
+    
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    
+    const material = new THREE.PointsMaterial({
+      size: 0.8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      transparent: true,
+      opacity: 1,
+      blending: THREE.AdditiveBlending
+    });
+    
+    this.points = new THREE.Points(geometry, material);
+    this.points.position.set(
+      (Math.random() - 0.5) * 60,
+      (Math.random() - 0.3) * 40,
+      (Math.random() - 0.5) * 20
+    );
+    
+    this.velocities = velocities;
+    this.life = 1;
+    this.gravity = -0.05;
+    
+    fireworksScene.add(this.points);
+  }
+  
+  update() {
+    const positions = this.points.geometry.attributes.position.array;
+    
+    for(let i = 0; i < this.particleCount; i++) {
+      const i3 = i * 3;
+      
+      positions[i3] += this.velocities[i3];
+      positions[i3 + 1] += this.velocities[i3 + 1] + this.gravity;
+      positions[i3 + 2] += this.velocities[i3 + 2];
+      
+      this.velocities[i3 + 1] += this.gravity;
+    }
+    
+    this.points.geometry.attributes.position.needsUpdate = true;
+    this.life -= 0.01;
+    this.points.material.opacity = this.life;
+    
+    return this.life > 0;
+  }
+  
+  destroy() {
+    fireworksScene.remove(this.points);
+    this.points.geometry.dispose();
+    this.points.material.dispose();
+  }
+}
+
+let fireworks = [];
+let fireworksActive = false;
+
+function launchFirework() {
+  if(fireworksActive) {
+    fireworks.push(new Firework());
+  }
+}
+
+function animateFireworks() {
+  fireworks = fireworks.filter(fw => {
+    if(!fw.update()) {
+      fw.destroy();
+      return false;
+    }
+    return true;
+  });
+  
+  fireworksRenderer.render(fireworksScene, fireworksCamera);
+  requestAnimationFrame(animateFireworks);
+}
+animateFireworks();
+
+// ============ HEARTS CONNECTION ANIMATION ============
+const connectionCanvas = document.getElementById('connection-canvas');
+const connCtx = connectionCanvas.getContext('2d');
+
+const heartAnimation = {
+  heart1: { x: 100, y: 250, size: 0, targetSize: 80, color: '#ff1744' },
+  heart2: { x: 600, y: 250, size: 0, targetSize: 80, color: '#c471ed' },
+  mergedHeart: { x: 350, y: 250, size: 0, targetSize: 120, opacity: 0 },
+  particles: []
+};
+
+function drawHeart(x, y, size, color, opacity = 1) {
+  connCtx.save();
+  connCtx.globalAlpha = opacity;
+  connCtx.fillStyle = color;
+  connCtx.shadowBlur = 40;
+  connCtx.shadowColor = color;
+  
+  connCtx.beginPath();
+  const topY = y - size * 0.3;
+  connCtx.moveTo(x, topY + size);
+  connCtx.bezierCurveTo(x, topY + size * 0.7, x - size * 0.5, topY + size * 0.3, x - size * 0.5, topY);
+  connCtx.bezierCurveTo(x - size * 0.5, topY - size * 0.3, x - size * 0.2, topY - size * 0.5, x, topY - size * 0.2);
+  connCtx.bezierCurveTo(x + size * 0.2, topY - size * 0.5, x + size * 0.5, topY - size * 0.3, x + size * 0.5, topY);
+  connCtx.bezierCurveTo(x + size * 0.5, topY + size * 0.3, x, topY + size * 0.7, x, topY + size);
+  connCtx.fill();
+  connCtx.restore();
+}
+
+function createParticles(x, y) {
+  for(let i = 0; i < 50; i++) {
+    heartAnimation.particles.push({
+      x: x,
+      y: y,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
+      size: 3 + Math.random() * 5,
+      life: 1,
+      color: ['#ff1744', '#ff4081', '#ff6b9d', '#c471ed', '#ffa8c5'][Math.floor(Math.random() * 5)]
+    });
+  }
+}
+
+function animateConnection() {
+  connCtx.clearRect(0, 0, 700, 500);
+  
+  // Draw hearts
+  if(heartAnimation.heart1.size > 0) {
+    drawHeart(heartAnimation.heart1.x, heartAnimation.heart1.y, heartAnimation.heart1.size, heartAnimation.heart1.color);
+  }
+  
+  if(heartAnimation.heart2.size > 0) {
+    drawHeart(heartAnimation.heart2.x, heartAnimation.heart2.y, heartAnimation.heart2.size, heartAnimation.heart2.color);
+  }
+  
+  // Draw connection line
+  if(heartAnimation.heart1.size >= heartAnimation.heart1.targetSize && heartAnimation.heart2.size >= heartAnimation.heart2.targetSize) {
+    const gradient = connCtx.createLinearGradient(heartAnimation.heart1.x, heartAnimation.heart1.y, heartAnimation.heart2.x, heartAnimation.heart2.y);
+    gradient.addColorStop(0, '#ff1744');
+    gradient.addColorStop(0.5, '#ff4081');
+    gradient.addColorStop(1, '#c471ed');
+    
+    connCtx.strokeStyle = gradient;
+    connCtx.lineWidth = 6;
+    connCtx.shadowBlur = 30;
+    connCtx.shadowColor = '#ff4081';
+    connCtx.beginPath();
+    connCtx.moveTo(heartAnimation.heart1.x + 40, heartAnimation.heart1.y);
+    connCtx.lineTo(heartAnimation.heart2.x - 40, heartAnimation.heart2.y);
+    connCtx.stroke();
+  }
+  
+  // Draw merged heart
+  if(heartAnimation.mergedHeart.size > 0) {
+    const gradient = connCtx.createRadialGradient(350, 250, 0, 350, 250, heartAnimation.mergedHeart.size);
+    gradient.addColorStop(0, '#ff1744');
+    gradient.addColorStop(0.5, '#ff4081');
+    gradient.addColorStop(1, '#c471ed');
+    drawHeart(350, 250, heartAnimation.mergedHeart.size, gradient, heartAnimation.mergedHeart.opacity);
+  }
+  
+  // Draw particles
+  heartAnimation.particles.forEach((p, index) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.02;
+    
+    if(p.life <= 0) {
+      heartAnimation.particles.splice(index, 1);
+      return;
+    }
+    
+    connCtx.globalAlpha = p.life;
+    connCtx.fillStyle = p.color;
+    connCtx.shadowBlur = 10;
+    connCtx.shadowColor = p.color;
+    connCtx.beginPath();
+    connCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    connCtx.fill();
+  });
+  
+  connCtx.globalAlpha = 1;
+}
+
+// ============ INITIAL ANIMATION ============
+gsap.to('#form-container', {
+  opacity: 1,
+  scale: 1,
+  y: 0,
+  duration: 1.5,
+  delay: 0.5,
+  ease: 'elastic.out(1, 0.6)'
+});
+
+gsap.to('.form-element', {
+  opacity: 1,
+  y: 0,
+  stagger: 0.15,
+  duration: 0.8,
+  delay: 1,
+  ease: 'power2.out'
+});
+
+// ============ INPUT EFFECTS ============
+document.querySelectorAll('.form-input').forEach(input => {
+  input.addEventListener('focus', function(e) {
+    for(let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.textContent = ['💕', '💖', '💗', '💓', '💝'][Math.floor(Math.random() * 5)];
+        particle.style.left = e.target.getBoundingClientRect().left + Math.random() * e.target.offsetWidth + 'px';
+        particle.style.top = e.target.getBoundingClientRect().top + 'px';
+        particle.style.fontSize = (18 + Math.random() * 16) + 'px';
+        document.body.appendChild(particle);
+        
+        gsap.to(particle, {
+          y: -120,
+          x: (Math.random() - 0.5) * 80,
+          rotation: (Math.random() - 0.5) * 360,
+          opacity: 0,
+          scale: 2,
+          duration: 2.5,
+          ease: 'power1.out',
+          onComplete: () => particle.remove()
+        });
+      }, i * 150);
+    }
+  });
+});
+
+// ============ SUCCESS CELEBRATION ============
+window.celebrateLogin = function() {
+  // Show connection screen
+  const connectionScreen = document.getElementById('connection-screen');
+  connectionScreen.style.display = 'flex';
+  
+  // Animation timeline
+  const tl = gsap.timeline();
+  
+  // Step 1: Hearts appear from sides
+  tl.to(heartAnimation.heart1, {
+    size: heartAnimation.heart1.targetSize,
+    duration: 1,
+    ease: 'back.out(1.5)',
+    onUpdate: animateConnection
+  });
+  
+  tl.to(heartAnimation.heart2, {
+    size: heartAnimation.heart2.targetSize,
+    duration: 1,
+    ease: 'back.out(1.5)',
+    onUpdate: animateConnection
+  }, '-=0.8');
+  
+  // Step 2: Hearts move towards center
+  tl.to(heartAnimation.heart1, {
+    x: 280,
+    duration: 1.5,
+    ease: 'power2.inOut',
+    onUpdate: animateConnection
+  }, '+=0.5');
+  
+  tl.to(heartAnimation.heart2, {
+    x: 420,
+    duration: 1.5,
+    ease: 'power2.inOut',
+    onUpdate: animateConnection
+  }, '-=1.5');
+  
+  // Step 3: Hearts merge
+  tl.add(() => {
+    createParticles(350, 250);
+  });
+  
+  tl.to([heartAnimation.heart1, heartAnimation.heart2], {
+    size: 0,
+    duration: 0.6,
+    ease: 'power2.in',
+    onUpdate: animateConnection
+  });
+  
+  tl.to(heartAnimation.mergedHeart, {
+    size: heartAnimation.mergedHeart.targetSize,
+    opacity: 1,
+    duration: 1.2,
+    ease: 'elastic.out(1, 0.5)',
+    onUpdate: animateConnection
+  }, '-=0.3');
+  
+  // Step 4: Show text
+  tl.to('#connection-text', {
+    opacity: 1,
+    scale: 1.2,
+    duration: 1,
+    ease: 'back.out(1.5)'
+  }, '-=0.5');
+  
+  // Step 5: Start fireworks
+  tl.add(() => {
+    fireworksCanvas.style.display = 'block';
+    fireworksActive = true;
+    const fireworkInterval = setInterval(launchFirework, 350);
+    
+    setTimeout(() => {
+      fireworksActive = false;
+      clearInterval(fireworkInterval);
+    }, 5000);
+  }, '-=0.5');
+  
+  // Continuous particle animation
+  const particleInterval = setInterval(() => {
+    if(heartAnimation.particles.length > 0) {
+      animateConnection();
+    }
+  }, 30);
+  
+  // Cleanup and redirect after 6 seconds
+  setTimeout(() => {
+    clearInterval(particleInterval);
+    // Your redirect logic here
+    // window.location.href = '/dashboard';
+  }, 6000);
+};
+
+// Resize handlers
+window.addEventListener('resize', () => {
+  fireworksCamera.aspect = window.innerWidth / window.innerHeight;
+  fireworksCamera.updateProjectionMatrix();
+  fireworksRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+<%- include('partials/footer') %>

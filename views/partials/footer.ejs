@@ -1,0 +1,12 @@
+</main>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="/js/global-sockets.js"></script>
+
+    <% if (typeof pageScript !== 'undefined' && pageScript) { %>
+        <script src="/js/<%= pageScript %>"></script>
+    <% } %>
+
+</body>
+</html>

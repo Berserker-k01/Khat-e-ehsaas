@@ -1,0 +1,345 @@
+<%- include('partials/header') %>
+
+<canvas id="starfield" class="fixed top-0 left-0 w-full h-full z-[-1]"></canvas>
+
+<div class="moon fixed top-[5%] right-[5%] w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full z-[-1]"></div>
+
+<div id="success-screen" class="fixed inset-0 bg-black/95 z-50 hidden
+  flex-col items-center justify-center text-center p-4 opacity-0 transition-opacity duration-500">
+  <div class="text-[80px] sm:text-[120px] animate-[successBounce_1s_ease-in-out]
+    [filter:drop-shadow(0_0_60px_#10b981)] mb-4 sm:mb-8">💌</div>
+  <div class="font-['Dancing_Script'] text-4xl sm:text-5xl md:text-7xl 
+    text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600
+    [filter:drop-shadow(0_0_50px_rgba(16,185,129,1))] animate-[textGlow_2s_ease-in-out_infinite]">
+    Letter Sent! 💕
+  </div>
+</div>
+
+<div class="page-wrapper min-h-screen w-full flex items-center justify-center px-4 sm:px-6 md:px-8 py-6 sm:py-8 overflow-y-auto">
+  
+  <div id="form-container" class="relative z-10 w-full max-w-4xl my-auto
+    bg-[rgba(35,25,60,0.88)] text-white backdrop-blur-xl saturate-150
+    border-2 border-[rgba(255,105,180,0.5)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8
+    shadow-xl shadow-pink-500/30">
+
+    <h1 class="form-title font-['Dancing_Script'] text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6
+      text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b9d] via-[#c471ed] to-[#f64f59]
+      [filter:drop-shadow(0_0_40px_rgba(255,105,180,0.8))] animate-[titleShine_4s_ease-in-out_infinite]
+      leading-tight">
+      Write Your Feelings... 💕
+    </h1>
+
+    <form id="letter-form">
+      <!-- Two Column Grid Layout -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
+        
+        <!-- Category Dropdown -->
+        <div class="form-group">
+          <label for="category" class="form-label block mb-2 
+            font-['Caveat'] text-xl sm:text-2xl text-[#ffb3d1]
+            [text-shadow:0_0_20px_rgba(255,105,180,0.7)]">
+            Choose a Reason 💭
+          </label>
+          <select id="category" name="category" class="form-select w-full 
+            bg-[rgba(255,255,255,0.15)] border-2 border-[rgba(255,105,180,0.5)] rounded-full
+            py-2.5 sm:py-3 px-4 text-sm sm:text-base text-white font-semibold
+            focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500
+            transition-all duration-300 appearance-none cursor-pointer
+            bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20fill=%27%23ffb3d1%27%20d=%27M6%209L1%204h10z%27/%3E%3C/svg%3E')]
+            bg-no-repeat bg-[position:right_1rem_center] bg-[length:12px]
+            pr-10">
+            <option value="miss-me" class="bg-[#1e1432] text-pink-100">When you miss me 💕</option>
+            <option value="need-motivation" class="bg-[#1e1432] text-pink-100">When you need motivation ✨</option>
+            <option value="angry-at-me" class="bg-[#1e1432] text-pink-100">When you are angry at me 🌹</option>
+            <option value="feel-lonely" class="bg-[#1e1432] text-pink-100">When you feel lonely 🤗</option>
+            <option value="just-because" class="bg-[#1e1432] text-pink-100">Just because... 💖</option>
+          </select>
+        </div>
+
+        <!-- Character Counter (Right Side on Desktop) -->
+        <div class="form-group flex items-end justify-start md:justify-end pb-2">
+          <div class="char-counter text-[rgba(255,182,193,0.75)] text-xs sm:text-sm font-mono">
+            <span id="char-count">0</span> characters
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Width Textarea -->
+      <div class="form-group mb-4 md:mb-6">
+        <label for="text" class="form-label block mb-2 
+          font-['Caveat'] text-xl sm:text-2xl text-[#ffb3d1]
+          [text-shadow:0_0_20px_rgba(255,105,180,0.7)]">
+          Your Letter 💌
+        </label>
+        <textarea id="text" name="text" class="form-textarea w-full h-[180px] sm:h-[200px] md:h-[220px]
+          bg-[rgba(255,255,255,0.15)] border-2 border-[rgba(255,105,180,0.5)] rounded-xl sm:rounded-2xl
+          py-3 px-4 sm:py-3.5 sm:px-4 text-sm sm:text-base text-[#ffe5f0] leading-relaxed
+          placeholder:text-[rgba(255,182,193,0.65)] placeholder:font-['Caveat'] placeholder:text-base sm:placeholder:text-lg
+          focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500
+          transition-all duration-300 resize-none overflow-y-auto" 
+          placeholder="Pour your heart out here... Write something beautiful 💕" required></textarea>
+      </div>
+
+      <!-- Button -->
+      <button type="submit" class="form-button w-full 
+        bg-[linear-gradient(135deg,#ff1744_0%,#ff4081_50%,#ff6b9d_100%)]
+        text-white text-base sm:text-lg md:text-xl font-bold py-3 sm:py-3.5 px-6 rounded-full
+        shadow-lg shadow-pink-500/40
+        hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-500/60
+        active:scale-[0.98]
+        transition-all duration-300 ease-in-out
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100">
+        Seal and Send Letter 🕊️
+      </button>
+
+      <!-- Error Message -->
+      <div id="error-message" class="hidden mt-4 p-2.5 sm:p-3 rounded-xl 
+        bg-[rgba(255,107,107,0.15)] border-2 border-[rgba(255,107,107,0.4)] text-center
+        font-['Caveat'] text-lg sm:text-xl text-[#ffb6b6]">
+      </div>
+    </form>
+
+    <!-- Back Link -->
+    <a href="/letters" class="back-link block text-center mt-4 sm:mt-5
+      font-['Caveat'] text-lg sm:text-xl text-[#ffb3d1]
+      hover:text-[#ff4081] hover:[text-shadow:0_0_20px_rgba(255,64,129,1)]
+      transition-all duration-300">
+      ← Back to Letters
+    </a>
+  </div>
+</div>
+
+<style>
+  /* Moon Glow Effect - Proper Yellow Color */
+  .moon {
+    background: radial-gradient(circle at 30% 30%, 
+      #ffffff 0%, 
+      #fffacd 25%, 
+      #ffd700 50%, 
+      #ffcc00 75%, 
+      #ff9900 100%);
+    box-shadow: 
+      0 0 40px 10px rgba(255, 250, 205, 0.8),
+      0 0 80px 20px rgba(255, 215, 0, 0.6),
+      0 0 120px 30px rgba(255, 204, 0, 0.4),
+      inset -15px -15px 40px rgba(0, 0, 0, 0.2);
+    animation: moonGlow 6s ease-in-out infinite;
+  }
+
+  @keyframes moonGlow {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 
+        0 0 40px 10px rgba(255, 250, 205, 0.8),
+        0 0 80px 20px rgba(255, 215, 0, 0.6),
+        0 0 120px 30px rgba(255, 204, 0, 0.4),
+        inset -15px -15px 40px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 
+        0 0 60px 20px rgba(255, 250, 205, 1),
+        0 0 100px 30px rgba(255, 215, 0, 0.8),
+        0 0 150px 40px rgba(255, 204, 0, 0.6),
+        inset -15px -15px 40px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  @keyframes titleShine {
+    0%, 100% { filter: drop-shadow(0 0 40px rgba(255, 105, 180, 0.8)); }
+    50% { filter: drop-shadow(0 0 60px rgba(199, 113, 237, 1)); }
+  }
+
+  @keyframes successBounce { 
+    0%, 100% { transform: scale(1); } 
+    50% { transform: scale(1.35); } 
+  }
+
+  @keyframes textGlow {
+    0%, 100% { filter: drop-shadow(0 0 50px rgba(16, 185, 129, 1)); }
+    50% { filter: drop-shadow(0 0 70px rgba(16, 185, 129, 1)); }
+  }
+
+  /* Custom scrollbar for textarea */
+  .form-textarea::-webkit-scrollbar {
+    width: 6px;
+  }
+  .form-textarea::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  .form-textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 105, 180, 0.5);
+    border-radius: 10px;
+  }
+  .form-textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 105, 180, 0.7);
+  }
+
+  /* Prevent body scroll lock */
+  body {
+    overflow-y: auto !important;
+    min-height: 100vh;
+  }
+</style>
+
+<script src="/js/write-letter.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Starfield Animation
+  const starCanvas = document.getElementById('starfield');
+  const starCtx = starCanvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let rect = starCanvas.getBoundingClientRect();
+  starCanvas.width = rect.width * dpr;
+  starCanvas.height = rect.height * dpr;
+  starCtx.scale(dpr, dpr);
+  let stars = [];
+  let shootingStars = [];
+  
+  function resize() {
+    rect = starCanvas.getBoundingClientRect();
+    starCanvas.width = rect.width * dpr;
+    starCanvas.height = rect.height * dpr;
+    starCtx.scale(dpr, dpr);
+    stars = []; 
+    initStars();
+  }
+  window.addEventListener('resize', resize);
+  
+  class Star {
+    constructor() {
+      this.x = Math.random() * starCanvas.offsetWidth; 
+      this.y = Math.random() * starCanvas.offsetHeight;
+      this.radius = Math.random() * 1.2 + 0.5; 
+      this.opacity = Math.random() * 0.5 + 0.5;
+      this.twinkleSpeed = Math.random() * 0.0005 + 0.0005; 
+      this.twinkleDirection = 1;
+      this.vx = (Math.random() - 0.5) * (this.radius * 0.1); 
+      this.vy = (Math.random() - 0.5) * (this.radius * 0.1);
+    }
+    draw() {
+      starCtx.beginPath(); 
+      starCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      starCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+      starCtx.shadowBlur = this.radius * 4; 
+      starCtx.shadowColor = `rgba(255, 255, 220, ${this.opacity * 0.5})`;
+      starCtx.fill();
+    }
+    update() {
+      this.opacity += this.twinkleSpeed * this.twinkleDirection;
+      if (this.opacity >= 1) this.twinkleDirection = -1; 
+      if (this.opacity <= 0.5) this.twinkleDirection = 1;
+      this.x += this.vx; 
+      this.y += this.vy;
+      if (this.x > starCanvas.offsetWidth + 5) this.x = -5; 
+      if (this.x < -5) this.x = starCanvas.offsetWidth + 5;
+      if (this.y > starCanvas.offsetHeight + 5) this.y = -5; 
+      if (this.y < -5) this.y = starCanvas.offsetHeight + 5;
+      this.draw();
+    }
+  }
+  
+  class ShootingStar {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * starCanvas.offsetWidth; 
+      this.y = 0; 
+      this.len = (Math.random() * 80) + 10;
+      this.speed = (Math.random() * 10) + 6; 
+      this.size = (Math.random() * 1) + 0.1;
+      this.waitTime = new Date().getTime() + (Math.random() * 3000) + 500; 
+      this.active = false;
+    }
+    update() {
+      if (this.active) {
+        this.x -= this.speed; 
+        this.y += this.speed;
+        if (this.x < 0 || this.y >= starCanvas.offsetHeight) { 
+          this.reset(); 
+        }
+      } else { 
+        if (this.waitTime < new Date().getTime()) { 
+          this.active = true; 
+        } 
+      }
+    }
+    draw() {
+      if (this.active) {
+        starCtx.lineWidth = this.size; 
+        starCtx.beginPath(); 
+        starCtx.moveTo(this.x, this.y);
+        starCtx.lineTo(this.x + this.len, this.y - this.len);
+        const gradient = starCtx.createLinearGradient(this.x, this.y, this.x + this.len, this.y - this.len);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); 
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+        starCtx.strokeStyle = gradient; 
+        starCtx.stroke();
+      }
+    }
+  }
+  
+  function initStars() {
+    const starCount = Math.max(150, Math.floor(window.innerWidth / 4));
+    for (let i = 0; i < starCount; i++) { 
+      stars.push(new Star()); 
+    }
+    if (shootingStars.length === 0) { 
+      for(let i = 0; i < 3; i++) { 
+        shootingStars.push(new ShootingStar()); 
+      } 
+    }
+  }
+  
+  function animate() {
+    starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+    const gradient = starCtx.createRadialGradient(
+      starCanvas.offsetWidth / 2, 
+      starCanvas.offsetHeight, 
+      0, 
+      starCanvas.offsetWidth / 2, 
+      starCanvas.offsetHeight, 
+      starCanvas.offsetHeight
+    );
+    gradient.addColorStop(0, '#1b2735'); 
+    gradient.addColorStop(1, '#090a0f');
+    starCtx.fillStyle = gradient; 
+    starCtx.fillRect(0, 0, starCanvas.offsetWidth, starCanvas.offsetHeight);
+    stars.forEach(s => s.update()); 
+    shootingStars.forEach(s => { 
+      s.update(); 
+      s.draw(); 
+    });
+    requestAnimationFrame(animate);
+  }
+  
+  initStars();
+  animate();
+
+  // Character counter
+  const textarea = document.getElementById('text');
+  const charCount = document.getElementById('char-count');
+  if (textarea && charCount) {
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length;
+    });
+  }
+
+  // Success animation function
+  window.showSuccessAnimation = function() {
+    const successScreen = document.getElementById('success-screen');
+    if (successScreen) {
+      successScreen.style.display = 'flex';
+      setTimeout(() => { 
+        successScreen.classList.remove('opacity-0');
+      }, 10);
+      setTimeout(() => { 
+        window.location.href = '/letters'; 
+      }, 3000);
+    }
+  };
+});
+</script>
+
+<%- include('partials/footer') %>
