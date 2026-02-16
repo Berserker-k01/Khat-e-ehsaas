@@ -24,6 +24,33 @@
       z-index: 0;
     }
 
+    /* Navigation Back */
+    .nav-back {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      z-index: 100;
+      color: white;
+      text-decoration: none;
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-back:hover {
+      color: #ff6b9d;
+      transform: translateX(-5px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     /* Enhanced Moon */
     .moon {
       position: fixed;
@@ -529,6 +556,8 @@
 
   <!-- Moon -->
   <div class="moon"></div>
+
+  <a href="/dashboard" class="nav-back">← Retour au nid</a>
 
   <!-- Main Container -->
   <div class="letters-container">
